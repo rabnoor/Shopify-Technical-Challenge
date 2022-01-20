@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+    <head> 
+        <style> 
+            #bottom {
+                background:Aquamarine
+;
+                }
+            #top{
+                background:AliceBlue;
+            }.topnav {
+                background-color: #333;
+                overflow: hidden;
+            }.topnav a {
+                float: left;
+                color: #f2f2f2;
+                text-align: center;
+                padding: 14px 16px;
+                text-decoration: none;
+                font-size: 17px;
+            }.topnav a.active {
+            background-color: #04AA6D;
+            color: white;
+            }
+            .topnav a:hover {
+            background-color: #ddd;
+            color: black;
+            }
+                        
+
+
+           
+        </style> 
+    </head> 
+    <script type = "text/javascript">
+            function search(){
+            var data = {ProductCode: document.getElementById("search").value}
+            fetch('/search', {
+                method: 'POST', 
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.success){
+                        console.log(data.data.name)
+                        document.getElementById("bottom").innerHTML = "";
+                        document.getElementById("bottom").innerHTML += "<h1>" + "Product Information" + "</h1>" + "<br>";
+                        document.getElementById("bottom").innerHTML += "NAME: " + data.data.Name + "<br>";
+                        document.getElementById("bottom").innerHTML += "Product Code: " + data.data.ProductCode + "<br>";
+                        document.getElementById("bottom").innerHTML += "Company: " + data.data.Company + "<br>";
+                        document.getElementById("bottom").innerHTML += "Count: " + data.data.Count + "<br>";
+                        document.getElementById("bottom").innerHTML += '<input type="button" value="Edit" onclick="edit('+`${data.data.ProductCode}` +');">';
+                        document.getElementById("bottom").innerHTML += '<input type="button" value="Delete" onclick="deleteProduct('+`${data.data.ProductCode}` +');">';
+                        document.getElementById("bottom").innerHTML += "<br><br><br><br><br>";
+                    }
+                    else{
+                        alert(data.message)
+                    }
+                })
+                .catch((error) => {
+                console.error('Error:', error);
+                });
+            }
+
+            function viewAll(){
+                document.getElementById("bottom").innerHTML = "";
+                fetch('/all', {
+                method: 'POST', 
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.success){
+                        // console.log(data.data.Name)
+                        
+                        document.getElementById("bottom").innerHTML += "<h1>" + "Inventory Information" + "</h1>" + "<br>";
+                        for (var k of data.data){
+                        document.getElementById("bottom").innerHTML += "NAME: " + k.Name + "<br>";
+                        document.getElementById("bottom").innerHTML += "Product code: " + k.ProductCode + "<br>";
+                        document.getElementById("bottom").innerHTML += "Company: " + k.Company + "<br>";
+                        document.getElementById("bottom").innerHTML += "Count: " + k.Count + "<br><br>"
+                        document.getElementById("bottom").innerHTML += '<input type="button" value="Edit" onclick="edit('+`${k.ProductCode}` +');">';
+                        document.getElementById("bottom").innerHTML += '<input type="button" value="Delete" onclick="deleteProduct('+`${k.ProductCode}` +');">';
+                        document.getElementById("bottom").innerHTML += "<br><br><br><br><br>";
+
+                        }
+                    }
+                        
+                    else{
+                        alert(data.message)
+                    }
+                })
+                .catch((error) => {
+                console.error('Error:', error);
+                });
+            }
+
+            function edit(ProductCode){
+                document.getElementById("bottom").innerHTML = "<h1>Edit Inventory</h1><br><br>"
+                var data = {ProductCode:ProductCode}
+                // console.log(data)
+                fetch('/edit', {
+                    method: 'POST', 
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                    }).then(response => response.json())
+                    .then(data => {
+                        console.log(data)
+                        document.getElementById("bottom").innerHTML += 'NAME: <input type="text" id= "Name" value="' + data.data.Name + '"<br>';
+                        document.getElementById("bottom").innerHTML += 'Product Code: ' + data.data.ProductCode + '<br>';
+                        document.getElementById("bottom").innerHTML += 'Company: <input type="text" id= "Company" value="' + data.data.Company + '"<br>';
+                        document.getElementById("bottom").innerHTML += 'Count: <input type="number" id= "Count" value="' + data.data.Count + '"<br>';                    
+                        document.getElementById("bottom").innerHTML += '<input type="button" value="Update" onclick="Update('+`${data.data.ProductCode}` +');">';
+
+                    })
+                    .catch((error) => {
+                    console.error('Error:', error);
+                    });
+                }
+            function deleteProduct(id){
+                var data = {ProductCode:id}
+                // console.log(data)
+                fetch('/deleteProduct', {
+                    method: 'POST', 
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                    }).then(response => response.json())
+                    .then(data => {
+                        alert(data.message)
+                        viewAll();
+                    })
+                    .catch((error) => {
+                    console.error('Error:', error);
+                    });
+                }
+            function Update(ProductCode){
+                var data = {ProductCode: ProductCode, Name: document.getElementById("Name").value, Company: document.getElementById("Company").value, Count: document.getElementById("Count").value}
+                console.log(data)
+            fetch('/update', {
+                method: 'POST', 
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+                }).then(response => response.json())
+                .then(data => {
+                    // console.log(data)
+                    alert(data.message);
+                })
+                .catch((error) => {
+                console.error('Error:', error);
+                });
+            }
+
+            function downloadCSV(){
+               
+            window.open("/csv")    
+            }
+
+            
+        
+
+        </script>
+<body>
+    <div class="top" >
+        <h1>Inventory Manager</h1>
+        <nav class="topnav">
+            <a class="active" href="/">View/Edit Inventory</a>
+            <a href="/addInventory">Create inventory item</a>
+            
+        </nav>
+        <h3> Search by product code </h3>
+        <input id = "search" type="text" placeholder="Search by product id..">
+        <input type="button" value="Search" onclick="search();"><br><br>
+        <input type="button" value="View All" onclick="viewAll();"><br><br>
+        <input type="button" value="Download CSV" onclick="downloadCSV();"><br><br>
+        
+        <br><br><br><br><br>
+
+    </div>
+    <div class="bottom", id = "bottom" >
+
+
+    </div>
+    </body>
+    </html>
